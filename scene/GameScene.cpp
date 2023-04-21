@@ -15,6 +15,7 @@ void GameScene::Initialize() {
 	dxCommon_ = DirectXCommon::GetInstance();
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
+
 	// BG(2Dスプライト)
 	textureHandleBG_ = TextureManager::Load("bg.jpg");
 	spriteBG_ = Sprite::Create(textureHandleBG_, {0, 0});
