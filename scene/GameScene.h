@@ -34,11 +34,15 @@ public: // メンバ関数
 	/// 毎フレーム処理
 	/// </summary>
 	void Update();
-
+	void BeamMove();//ビーム移動
+	void BeamBorn();//ビーム発生
 	/// <summary>
 	/// 描画
 	/// </summary>
 	void Draw();
+	void PlayerUpdate(); // プレイヤー更新
+	void BeamUpdate();//ビーム更新
+
 
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
@@ -54,6 +58,17 @@ private: // メンバ変数
 	uint32_t textureHandleStage_ = 0;
 	Model* modelStage_ = nullptr;
 	WorldTransform worldTransformStage_;
+	//プレイヤー
+	uint32_t textureHandlePlayer_ = 0;
+	Model* modelPlayer_ = nullptr;
+	WorldTransform worldTransformPlayer_;
+	//ビーム
+	uint32_t textureHandleBeam_ = 0;
+	Model* modelBeam_ = nullptr;
+	WorldTransform worldTransformBeam_;
+
+	int beamFlag_ = 0;//ビーム存在フラグ
+
 	/// <summary>
 	/// ゲームシーン用
 	/// </summary>

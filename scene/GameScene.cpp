@@ -9,6 +9,8 @@ GameScene::GameScene() {}
 GameScene::~GameScene() {
 	delete spriteBG_;   // BG
 	delete modelStage_; // ステージ}
+	delete modelPlayer_;//プレイヤー
+	delete modelBeam_;//ビーム
 }
 void GameScene::Initialize() {
 
@@ -38,10 +40,84 @@ void GameScene::Initialize() {
 	    worldTransformStage_.translation_);
 	 //変換行列を定数バッファに転送
 	worldTransformStage_.TransferMatrix();
+	//プレイヤー
+	textureHandlePlayer_ = TextureManager::Load("player.png");
+	modelPlayer_ = Model::Create();
+	worldTransformPlayer_.scale_ = {0.5f, 0.5f, 0.5f};
+	worldTransformPlayer_.Initialize();
+	//ビーム
+	textureHandleBeam_ = TextureManager::Load("beam.png");
+	modelBeam_ = Model::Create();
+	worldTransformBeam_.scale_ = {0.3f, 0.3f, 0.3f};
+	worldTransformBeam_.Initialize();
 }
 // 更新
-void GameScene::Update() {}
-//表示
+void GameScene::Update() {
+	PlayerUpdate();//プレイヤー更新
+	BeamUpdate();//ビーム更新
+}
+// プレイヤー更新
+void GameScene::PlayerUpdate() {
+	// 変換行列を更新
+	worldTransformPlayer_.matWorld_ = MakeAffineMatrix(
+	    worldTransformPlayer_.scale_, worldTransformPlayer_.rotation_,
+	    worldTransformPlayer_.translation_);
+	// 変換行列を定数バッファに転送
+	worldTransformPlayer_.TransferMatrix();
+	// 移動
+	// 右へ移動
+	if (input_->PushKey(DIK_RIGHT)) {
+		worldTransformPlayer_.translation_.x += 0.1f;
+	}
+	if (worldTransformPlayer_.translation_.x >= 4)
+	{
+		worldTransformPlayer_.translation_.x = 4;
+	}
+
+	// 左へ移動
+	if (input_->PushKey(DIK_LEFT)) {
+		worldTransformPlayer_.translation_.x -= 0.1f;
+	}
+	if (worldTransformPlayer_.translation_.x < -4)
+	{
+		worldTransformPlayer_.translation_.x = -4;
+	}
+}
+//ビーム更新
+void GameScene::BeamUpdate() {
+	//変換行列を更新
+	worldTransformBeam_.matWorld_ = MakeAffineMatrix(
+	    worldTransformBeam_.scale_, 
+		worldTransformBeam_.rotation_,
+	    worldTransformBeam_.translation_);
+	//変換行列を定数バッファに転送
+	worldTransformBeam_.TransferMatrix();
+	BeamBorn();
+	BeamMove();
+}
+
+// ビーム発生
+void GameScene::BeamBorn() {
+	if (input_->PushKey(DIK_SPACE)&&beamFlag_==0) {
+		beamFlag_ = 1;
+		worldTransformBeam_.translation_.x = worldTransformPlayer_.translation_.x;
+		worldTransformBeam_.translation_.y = worldTransformPlayer_.translation_.y;
+		worldTransformBeam_.translation_.z = worldTransformPlayer_.translation_.z;
+	}
+}
+
+//ビーム移動
+void GameScene::BeamMove() {
+	if (beamFlag_ == 1) {
+		worldTransformBeam_.translation_.z += 0.1f;
+		worldTransformBeam_.rotation_.x += 0.1f;
+	}
+	if (worldTransformBeam_.translation_.z >= 40) {
+		beamFlag_ = 0;
+	}
+}
+
+    //表示
 void GameScene::Draw() {
 
 	// コマンドリストの取得
@@ -68,6 +144,11 @@ void GameScene::Draw() {
 	Model::PreDraw(commandList);
 	// ステージ
 	modelStage_->Draw(worldTransformStage_, viewProjection_, textureHandleStage_);
+	//プレイヤー
+	modelPlayer_->Draw(worldTransformPlayer_, viewProjection_, textureHandlePlayer_);
+	//レーザー
+	if (beamFlag_ == 1)
+	modelBeam_->Draw(worldTransformBeam_, viewProjection_, textureHandleBeam_);
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
