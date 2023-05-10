@@ -2,6 +2,7 @@
 #include "TextureManager.h"
 #include <cassert>
 #include "MathUtilityForText.h"
+#include<time.h>
 
 // コンストラクタ
 GameScene::GameScene() {}
@@ -11,9 +12,10 @@ GameScene::~GameScene() {
 	delete modelStage_; // ステージ}
 	delete modelPlayer_;//プレイヤー
 	delete modelBeam_;//ビーム
+	delete modelEnemy_;//敵
 }
 void GameScene::Initialize() {
-
+	srand((unsigned int)time(NULL));
 	dxCommon_ = DirectXCommon::GetInstance();
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
@@ -50,11 +52,21 @@ void GameScene::Initialize() {
 	modelBeam_ = Model::Create();
 	worldTransformBeam_.scale_ = {0.3f, 0.3f, 0.3f};
 	worldTransformBeam_.Initialize();
+	//敵
+	textureHandleEnemy_ = TextureManager::Load("enemy.png");
+	modelEnemy_ = Model::Create();
+	worldTransformEnemy_.scale_ = {0.5f, 0.5f, 0.5f};
+	worldTransformEnemy_.Initialize();
+	//デバックテキスト
+	debugText_ = DebugText::GetInstance();
+	debugText_->Initialize();
 }
 // 更新
 void GameScene::Update() {
 	PlayerUpdate();//プレイヤー更新
 	BeamUpdate();//ビーム更新
+	EnemyUpdate();//敵更新
+	Collision();//更新処理
 }
 // プレイヤー更新
 void GameScene::PlayerUpdate() {
@@ -96,6 +108,7 @@ void GameScene::BeamUpdate() {
 	BeamMove();
 }
 
+
 // ビーム発生
 void GameScene::BeamBorn() {
 	if (input_->PushKey(DIK_SPACE)&&beamFlag_==0) {
@@ -114,6 +127,77 @@ void GameScene::BeamMove() {
 	}
 	if (worldTransformBeam_.translation_.z >= 40) {
 		beamFlag_ = 0;
+	}
+}
+
+// 敵更新
+void GameScene::EnemyUpdate() {
+	//変換行列を更新
+	worldTransformEnemy_.matWorld_ = MakeAffineMatrix(
+	    worldTransformEnemy_.scale_,
+		worldTransformEnemy_.rotation_,
+	    worldTransformEnemy_.translation_);
+	//変換行列を定数バッファに転送
+	worldTransformEnemy_.TransferMatrix();
+	EnemyMove();
+	EnemyBorn();
+}
+//敵移動
+void GameScene::EnemyMove() { 
+	if (enemyFlag_ == 1) {
+		worldTransformEnemy_.translation_.z -= 0.1f; 
+		worldTransformEnemy_.rotation_.x -= 0.1f;
+	}
+	if (worldTransformEnemy_.translation_.z < -5) {
+		enemyFlag_ = 0;
+	}
+}
+//発生
+void GameScene::EnemyBorn() {
+	if (enemyFlag_ == 0) {
+		enemyFlag_ = 1;
+		worldTransformEnemy_.translation_.z = 40;
+		// 乱数座標指定
+		int x = rand() % 80;
+		float x2 = (float)x / 10 - 4;
+		worldTransformEnemy_.translation_.x = x2;
+	}
+	
+}
+//衝突判定
+void GameScene::Collision() {
+	//衝突判定
+	CollisionPlayerEnemy();
+	CollisionBeamEnemy();
+}
+//衝突判定(プレイヤーと数)
+void GameScene::CollisionPlayerEnemy() {
+	//敵が存在すれば
+	if (enemyFlag_ == 1) {
+	//差を求める
+		float dx = abs(worldTransformPlayer_.translation_.x - worldTransformEnemy_.translation_.x);
+		float dz = abs(worldTransformPlayer_.translation_.z - worldTransformEnemy_.translation_.z);
+	//衝突したら
+		if (dx < 1 && dz < 1) {
+		//存在しない
+			enemyFlag_ = 0;
+		    playerLife_ -= 1;
+		}
+	}
+}
+void GameScene::CollisionBeamEnemy() {
+	// 敵が存在すれば
+	if (enemyFlag_ == 1&& beamFlag_==1) {
+		// 差を求める
+		float dx = abs(worldTransformBeam_.translation_.x - worldTransformEnemy_.translation_.x);
+		float dz = abs(worldTransformBeam_.translation_.z - worldTransformEnemy_.translation_.z);
+		// 衝突したら
+		if (dx < 1 && dz < 1) {
+			// 存在しない
+			enemyFlag_ = 0;
+		    beamFlag_= 0;
+			gameScore_++;
+		}
 	}
 }
 
@@ -149,6 +233,9 @@ void GameScene::Draw() {
 	//レーザー
 	if (beamFlag_ == 1)
 	modelBeam_->Draw(worldTransformBeam_, viewProjection_, textureHandleBeam_);
+	//敵
+	modelEnemy_->Draw(worldTransformEnemy_, viewProjection_, textureHandleEnemy_);
+	
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
@@ -160,6 +247,14 @@ void GameScene::Draw() {
 #pragma region 前景スプライト描画
 	// 前景スプライト描画前処理
 	Sprite::PreDraw(commandList);
+
+	// ゲームスコア
+	char str[100];
+	sprintf_s(str, "SCORE %d", gameScore_);
+	debugText_->Print(str, 200, 10, 2);
+	// デバックテキスト
+	debugText_->Print("AAA", 10, 10, 2);
+	debugText_->DrawAll();
 
 	/// <summary>
 	/// ここに前景スプライトの描画処理を追加できる
