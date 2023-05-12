@@ -9,7 +9,7 @@ GameScene::GameScene() {}
 // デストラクタ
 GameScene::~GameScene() {
 	delete spriteBG_;   // BG
-	delete modelStage_; // ステージ}
+	delete modelStage_; // ステージ
 	delete modelPlayer_;//プレイヤー
 	delete modelBeam_;//ビーム
 	delete modelEnemy_;//敵
@@ -61,13 +61,56 @@ void GameScene::Initialize() {
 	debugText_ = DebugText::GetInstance();
 	debugText_->Initialize();
 }
+
+//ゲームプレイ更新
+void GameScene::GamePlayUpdate() {
+	PlayerUpdate(); // プレイヤー更新
+	BeamUpdate();   // ビーム更新
+	EnemyUpdate();  // 敵更新
+	Collision();    // 更新処理
+}
+
 // 更新
 void GameScene::Update() {
-	PlayerUpdate();//プレイヤー更新
-	BeamUpdate();//ビーム更新
-	EnemyUpdate();//敵更新
-	Collision();//更新処理
+	//各シーンの更新処理を呼び出す
+	switch (sceneMode_)
+	{ 
+	case 0:
+		GamePlayUpdate();
+		break;
+	}
 }
+
+// ゲームプレイ表示3D
+void GameScene::GamePlayerDrow3D() {
+	// ステージ
+	modelStage_->Draw(worldTransformStage_, viewProjection_, textureHandleStage_);
+	// プレイヤー
+	modelPlayer_->Draw(worldTransformPlayer_, viewProjection_, textureHandlePlayer_);
+	// レーザー
+	if (beamFlag_ == 1)
+		modelBeam_->Draw(worldTransformBeam_, viewProjection_, textureHandleBeam_);
+	// 敵
+	modelEnemy_->Draw(worldTransformEnemy_, viewProjection_, textureHandleEnemy_);
+}
+
+// ゲームプレイ更新2D背景
+void GameScene::GamePlayerDrow2DBack() {
+	// 背景
+	spriteBG_->Draw();
+}
+
+// ゲームプレイ表示2D近景
+void GameScene::GamePlayerDrow2DNear() {
+	// ゲームスコア
+	char str[100];
+	sprintf_s(str, "SCORE %d", gameScore_);
+	debugText_->Print(str, 200, 10, 2);
+	// プレイヤーライフ
+	sprintf_s(str, "LIFE %d", playerLife_);
+	debugText_->Print(str, 900, 10, 2);
+}
+
 // プレイヤー更新
 void GameScene::PlayerUpdate() {
 	// 変換行列を更新
@@ -95,8 +138,21 @@ void GameScene::PlayerUpdate() {
 		worldTransformPlayer_.translation_.x = -4;
 	}
 }
+
+// ビーム発生
+void GameScene::BeamBorn() {
+	if (input_->PushKey(DIK_SPACE) && beamFlag_ == 0) {
+		beamFlag_ = 1;
+		worldTransformBeam_.translation_.x = worldTransformPlayer_.translation_.x;
+		worldTransformBeam_.translation_.y = worldTransformPlayer_.translation_.y;
+		worldTransformBeam_.translation_.z = worldTransformPlayer_.translation_.z;
+	}
+}
+
 //ビーム更新
 void GameScene::BeamUpdate() {
+	BeamBorn();
+	BeamMove();
 	//変換行列を更新
 	worldTransformBeam_.matWorld_ = MakeAffineMatrix(
 	    worldTransformBeam_.scale_, 
@@ -104,20 +160,8 @@ void GameScene::BeamUpdate() {
 	    worldTransformBeam_.translation_);
 	//変換行列を定数バッファに転送
 	worldTransformBeam_.TransferMatrix();
-	BeamBorn();
-	BeamMove();
 }
 
-
-// ビーム発生
-void GameScene::BeamBorn() {
-	if (input_->PushKey(DIK_SPACE)&&beamFlag_==0) {
-		beamFlag_ = 1;
-		worldTransformBeam_.translation_.x = worldTransformPlayer_.translation_.x;
-		worldTransformBeam_.translation_.y = worldTransformPlayer_.translation_.y;
-		worldTransformBeam_.translation_.z = worldTransformPlayer_.translation_.z;
-	}
-}
 
 //ビーム移動
 void GameScene::BeamMove() {
@@ -210,8 +254,12 @@ void GameScene::Draw() {
 #pragma region 背景スプライト描画
 	// 背景スプライト描画前処理
 	Sprite::PreDraw(commandList);
-	// 背景
-	spriteBG_->Draw();
+	//各シーンの背景2D表示を呼び出す
+	    switch (sceneMode_) {
+	case 0:
+		GamePlayerDrow2DBack();
+		break;
+	}
 	
 	/// <summary>
 	/// ここに背景スプライトの描画処理を追加できる
@@ -223,18 +271,16 @@ void GameScene::Draw() {
 	dxCommon_->ClearDepthBuffer();
 #pragma endregion
 
+
 #pragma region 3Dオブジェクト描画
 	// 3Dオブジェクト描画前処理
 	Model::PreDraw(commandList);
-	// ステージ
-	modelStage_->Draw(worldTransformStage_, viewProjection_, textureHandleStage_);
-	//プレイヤー
-	modelPlayer_->Draw(worldTransformPlayer_, viewProjection_, textureHandlePlayer_);
-	//レーザー
-	if (beamFlag_ == 1)
-	modelBeam_->Draw(worldTransformBeam_, viewProjection_, textureHandleBeam_);
-	//敵
-	modelEnemy_->Draw(worldTransformEnemy_, viewProjection_, textureHandleEnemy_);
+	// 各シーンの3D表示を呼び出す
+	switch (sceneMode_) {
+	case 0:
+		GamePlayerDrow3D(); // ゲームプレイ3D表示
+		break;
+	}
 	
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
@@ -243,17 +289,18 @@ void GameScene::Draw() {
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 #pragma endregion
-
+	// 各シーンの近景2D表示を呼び出す
+	switch (sceneMode_) {
+	case 0:
+		GamePlayerDrow2DNear(); // ゲームプレイ2D近景表示
+		break;
+	}
 #pragma region 前景スプライト描画
 	// 前景スプライト描画前処理
 	Sprite::PreDraw(commandList);
 
-	// ゲームスコア
-	char str[100];
-	sprintf_s(str, "SCORE %d", gameScore_);
-	debugText_->Print(str, 200, 10, 2);
 	// デバックテキスト
-	debugText_->Print("AAA", 10, 10, 2);
+	//debugText_->Print("AAA", 10, 10, 2);
 	debugText_->DrawAll();
 
 	/// <summary>

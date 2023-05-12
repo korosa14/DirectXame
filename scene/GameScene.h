@@ -53,6 +53,12 @@ public: // メンバ関数
 	void EnemyMove();//敵移動
 	void EnemyBorn();//敵発生
 
+	void GamePlayUpdate();//ゲームプレイ更新
+	void GamePlayerDrow3D();//ゲームプレイ3D表示
+	void GamePlayerDrow2DBack();//ゲームプレイ背景2D表示
+	void GamePlayerDrow2DNear();//ゲームプレイ近景2D表示
+
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -80,6 +86,7 @@ private: // メンバ変数
 	int enemyFlag_ = 0;//敵存在フラグ
 	int gameScore_ = 0;//ゲームスコア
 	int playerLife_ = 3;//プレイヤーライフ
+	int sceneMode_ = 0;//シーンモード
 	// 敵
 	uint32_t textureHandleEnemy_ = 0;
 	Model* modelEnemy_ = nullptr;
