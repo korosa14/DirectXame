@@ -13,6 +13,8 @@ GameScene::~GameScene() {
 	delete modelPlayer_;//プレイヤー
 	delete modelBeam_;//ビーム
 	delete modelEnemy_;//敵
+	delete spriteTitle_;//タイトル
+	delete spritesabuTitle_;//サブタイトル
 }
 void GameScene::Initialize() {
 	srand((unsigned int)time(NULL));
@@ -60,7 +62,54 @@ void GameScene::Initialize() {
 	//デバックテキスト
 	debugText_ = DebugText::GetInstance();
 	debugText_->Initialize();
+	//タイトル(2Dスプライト)
+	textureHandLeTitle_ = TextureManager::Load("title.png");
+	spriteTitle_ = Sprite::Create(textureHandLeTitle_, {0, 0});
+	//HIT ENTER KEY
+	textureHandlesabuTitle_ = TextureManager::Load("enter.png");
+	spritesabuTitle_ = Sprite::Create(textureHandlesabuTitle_, {360,350 });
+
 }
+
+//タイトル更新
+void GameScene::TitleUpdate()
+{
+	//エンターキーを押した瞬間
+	if (input_->TriggerKey(DIK_RETURN))
+	{
+		//モードをゲームプレイへ変更
+		sceneMode_ = 0;
+
+
+	}
+}
+//タイトル表示
+void GameScene::TitleDraw2DNear()
+{
+	//タイトル表示
+	spriteTitle_->Draw(); 
+	spritesabuTitle_->Draw();
+	//エンター表示
+	if (gameTimer_ % 40 >= 20)
+	{
+		spriteEnter_->Draw();
+	}
+	// エンター表示
+}
+////タイトル表示2D
+//void GameScene::TitleDraw2DNear()
+//{
+//	//タイトル表示
+//	spritesabuTitle_->Draw();
+//	//エンター表示
+//	if (timer_ % 40 >= 20)
+//	{
+//		spriteEnter_->Draw();
+//	}
+//}
+
+
+
 
 //ゲームプレイ更新
 void GameScene::GamePlayUpdate() {
@@ -68,7 +117,9 @@ void GameScene::GamePlayUpdate() {
 	BeamUpdate();   // ビーム更新
 	EnemyUpdate();  // 敵更新
 	Collision();    // 更新処理
+	TitleUpdate();//タイトル
 }
+
 
 // 更新
 void GameScene::Update() {
@@ -77,6 +128,9 @@ void GameScene::Update() {
 	{ 
 	case 0:
 		GamePlayUpdate();
+		break;
+	case 1:
+		TitleUpdate();
 		break;
 	}
 }
@@ -255,11 +309,12 @@ void GameScene::Draw() {
 	// 背景スプライト描画前処理
 	Sprite::PreDraw(commandList);
 	//各シーンの背景2D表示を呼び出す
-	    switch (sceneMode_) {
+	    switch (sceneMode_) 
+		{
 	case 0:
 		GamePlayerDrow2DBack();
 		break;
-	}
+		}
 	
 	/// <summary>
 	/// ここに背景スプライトの描画処理を追加できる
@@ -289,16 +344,20 @@ void GameScene::Draw() {
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 #pragma endregion
+	
+#pragma region 前景スプライト描画
+	// 前景スプライト描画前処理
+	Sprite::PreDraw(commandList);
+
 	// 各シーンの近景2D表示を呼び出す
 	switch (sceneMode_) {
 	case 0:
 		GamePlayerDrow2DNear(); // ゲームプレイ2D近景表示
 		break;
+	case 1:
+		TitleDraw2DNear();
+		break;
 	}
-#pragma region 前景スプライト描画
-	// 前景スプライト描画前処理
-	Sprite::PreDraw(commandList);
-
 	// デバックテキスト
 	//debugText_->Print("AAA", 10, 10, 2);
 	debugText_->DrawAll();

@@ -58,6 +58,8 @@ public: // メンバ関数
 	void GamePlayerDrow2DBack();//ゲームプレイ背景2D表示
 	void GamePlayerDrow2DNear();//ゲームプレイ近景2D表示
 
+	void TitleUpdate();//タイトル更新
+	void TitleDraw2DNear();//タイトル2D
 
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
@@ -81,12 +83,23 @@ private: // メンバ変数
 	uint32_t textureHandleBeam_ = 0;
 	Model* modelBeam_ = nullptr;
 	WorldTransform worldTransformBeam_;
+	//タイトル(スプライト)
+	uint32_t textureHandLeTitle_ = 0;
+	Sprite* spriteTitle_ = nullptr;
+	//サブタイトル
+	uint32_t textureHandlesabuTitle_ = 0;
+	Sprite* spritesabuTitle_ = nullptr;
+
+	Sprite* spriteEnter_ = nullptr;
 
 	int beamFlag_ = 0;//ビーム存在フラグ
 	int enemyFlag_ = 0;//敵存在フラグ
 	int gameScore_ = 0;//ゲームスコア
 	int playerLife_ = 3;//プレイヤーライフ
-	int sceneMode_ = 0;//シーンモード
+	//int sceneMode_ = 0;//シーンモード(ゲームプレイ)
+	int sceneMode_ = 1;//シーンモード(タイトル)
+	int gameTimer_ = 0;
+	int timer_ = 0;//タイマー変数
 	// 敵
 	uint32_t textureHandleEnemy_ = 0;
 	Model* modelEnemy_ = nullptr;
