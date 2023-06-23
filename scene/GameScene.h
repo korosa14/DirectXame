@@ -61,6 +61,11 @@ public: // メンバ関数
 	void TitleUpdate();//タイトル更新
 	void TitleDraw2DNear();//タイトル2D
 
+	void GameOverUpdate();//ゲームオーバー更新
+	void GameOver2DNear(); // ゲームオーバー2D
+
+	void GamePlayStart();//初期化
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -81,29 +86,38 @@ private: // メンバ変数
 	WorldTransform worldTransformPlayer_;
 	//ビーム
 	uint32_t textureHandleBeam_ = 0;
-	Model* modelBeam_ = nullptr;
-	WorldTransform worldTransformBeam_;
+	Model* modelBeam_ = {};
+	WorldTransform worldTransformBeam_[10];
+
+	int beamFlag_[10] = {}; // ビーム存在フラグ
+
 	//タイトル(スプライト)
 	uint32_t textureHandLeTitle_ = 0;
 	Sprite* spriteTitle_ = nullptr;
 	//サブタイトル
 	uint32_t textureHandlesabuTitle_ = 0;
 	Sprite* spritesabuTitle_ = nullptr;
+	//ゲームオーバー
+	uint32_t texturHandleGameover_ = 0;
+	Sprite* spriteGameover_ = nullptr;
 
 	Sprite* spriteEnter_ = nullptr;
 
-	int beamFlag_ = 0;//ビーム存在フラグ
-	int enemyFlag_ = 0;//敵存在フラグ
+	
+	int beamTimer_ = 0;//ビーム発射タイマー
 	int gameScore_ = 0;//ゲームスコア
 	int playerLife_ = 3;//プレイヤーライフ
 	//int sceneMode_ = 0;//シーンモード(ゲームプレイ)
 	int sceneMode_ = 1;//シーンモード(タイトル)
 	int gameTimer_ = 0;
 	int timer_ = 0;//タイマー変数
+	int gameover_ = 0;//ゲームオーバー
 	// 敵
 	uint32_t textureHandleEnemy_ = 0;
-	Model* modelEnemy_ = nullptr;
-	WorldTransform worldTransformEnemy_;
+	Model* modelEnemy_ = 0;
+	WorldTransform worldTransformEnemy_[10];
+	//敵存在フラグ
+	int enemyFlag_[10] = {};
 
 	//当たり判定
 	DebugText* debugText_ = nullptr;
