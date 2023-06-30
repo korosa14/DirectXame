@@ -411,8 +411,8 @@ void GameScene::CollisionPlayerEnemy() {
 				enemyFlag_[i] = 0;
 				playerLife_ -= 1;
 
-				//プレイヤーヒットSE
-				audio_->PlayWave(soundDataHandleEnemyHitSE_);
+				// プレイヤーヒットSE
+				audio_->PlayWave(soundDataHandlePlayerHitSE_);
 			}
 		}
 	}
@@ -435,8 +435,9 @@ void GameScene::CollisionBeamEnemy() {
 					beamFlag_[e] = 0;
 					gameScore_++;
 
+					
 					// プレイヤーヒットSE
-					audio_->PlayWave(soundDataHandlePlayerHitSE_);
+					audio_->PlayWave(soundDataHandleEnemyHitSE_);
 				}
 			}
 		}
