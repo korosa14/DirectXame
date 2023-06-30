@@ -66,6 +66,8 @@ public: // メンバ関数
 
 	void GamePlayStart();//初期化
 
+	void StageUpdate();//ステージ更新
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -79,7 +81,7 @@ private: // メンバ変数
 	// ステージ
 	uint32_t textureHandleStage_ = 0;
 	Model* modelStage_ = nullptr;
-	WorldTransform worldTransformStage_;
+	WorldTransform worldTransformStage_[20];
 	//プレイヤー
 	uint32_t textureHandlePlayer_ = 0;
 	Model* modelPlayer_ = nullptr;
@@ -127,6 +129,8 @@ private: // メンバ変数
 	//敵存在フラグ
 	int enemyFlag_[10] = {};
 	float enemySpeed_[10] = {};//敵のスピード
+
+	float enemyJumpSpeed_[10] = {};//敵ジャンプの移動速度
 
 	//当たり判定
 	DebugText* debugText_ = nullptr;
