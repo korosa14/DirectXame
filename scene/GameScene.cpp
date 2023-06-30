@@ -32,19 +32,20 @@ void GameScene::Initialize() {
 	// ステージ
 	textureHandleStage_ = TextureManager::Load("stage.jpg");
 	modelStage_ = Model::Create();
+	//ステージの数ループする
 	worldTransformStage_.Initialize();
 	// ビュープロジェクションの初期化
 	viewProjection_.translation_.y = 1;
 	viewProjection_.translation_.z = -6;
 	viewProjection_.Initialize();
-	//// ステージの位置を変更
+	// ステージの位置を変更
 	worldTransformStage_.translation_ = {0, -1.5f, 0};
 	worldTransformStage_.scale_ = {4.5f, 1, 40};
 	// 変換行列を更新
 	worldTransformStage_.matWorld_ = MakeAffineMatrix(
-	    worldTransformStage_.scale_, worldTransformStage_.rotation_,
-	    worldTransformStage_.translation_);
-	 //変換行列を定数バッファに転送
+	worldTransformStage_.scale_, worldTransformStage_.rotation_,
+	worldTransformStage_.translation_);
+	// 変換行列を定数バッファに転送
 	worldTransformStage_.TransferMatrix();
 	//プレイヤー
 	textureHandlePlayer_ = TextureManager::Load("player.png");
@@ -78,6 +79,18 @@ void GameScene::Initialize() {
 	//ゲームオーバー
 	texturHandleGameover_ = TextureManager::Load("gameover.png");
 	spriteGameover_ = Sprite::Create(texturHandleGameover_, {0, 0});
+
+
+	//サウンドデータの読み込み
+	soundDataHandleTitleBGM_ = audio_->LoadWave("Audio/Ring05.wav");
+	soundDataHandleGamePlayBGM_ = audio_->LoadWave("Audio/Ring08.wav");
+	soundDataHandleGameOverBGM_ = audio_->LoadWave("Audio/Ring09.wav");
+	soundDataHandleEnemyHitSE_ = audio_->LoadWave("Audio/chord.wav");
+	soundDataHandlePlayerHitSE_ = audio_->LoadWave("Audio/tada.wav");
+
+	//タイトルBGMを再生
+	audio_->StopWave(voiceHandleBGM_); // 現在のBGMを停止
+	voiceHandleBGM_ = audio_->PlayWave(soundDataHandleTitleBGM_, true);
 }
 
 //タイトル更新
@@ -89,6 +102,11 @@ void GameScene::TitleUpdate()
 		//モードをゲームプレイへ変更
 		sceneMode_ = 0;
 		GamePlayStart();
+
+		// BGM切り替え
+		audio_->StopWave(voiceHandleBGM_); // 現在のBGMを停止
+		voiceHandleBGM_ =
+		    audio_->PlayWave(soundDataHandleGamePlayBGM_, true); // ゲームプレイBGMを再生
 	}
 	
 }
@@ -113,7 +131,10 @@ void GameScene::GameOverUpdate()
 	if (input_->TriggerKey(DIK_RETURN)) {
 		// モードをゲームプレイへ変更
 		sceneMode_ = 1;
-		
+
+		// タイトルBGMを再生
+		audio_->StopWave(voiceHandleBGM_); // 現在のBGMを停止
+		voiceHandleBGM_ = audio_->PlayWave(soundDataHandleTitleBGM_, true);
 	}
 }
 void GameScene::GameOver2DNear()
@@ -139,6 +160,8 @@ void GameScene::GamePlayStart()
 	}
 	worldTransformPlayer_.translation_.x = 0;
 	GamePlayUpdate();
+
+	
 }
 
 
@@ -149,10 +172,16 @@ void GameScene::GamePlayUpdate() {
 	EnemyUpdate();  // 敵更新
 	Collision();    // 更新処理
 	if (playerLife_ <= 0) {
+		
+		// BGM切り替え
+		audio_->StopWave(voiceHandleBGM_); // 現在のBGMを停止
+		voiceHandleBGM_ =
+		    audio_->PlayWave(soundDataHandleGameOverBGM_, true); // ゲームプレイBGMを再生
+
 		// ゲームオーバーを表示
 		sceneMode_ = 2;
 	}
-
+	
 }
 
 
@@ -309,27 +338,44 @@ void GameScene::EnemyUpdate() {
 //敵移動
 void GameScene::EnemyMove() { 
 	for (int i = 0; i < 10; i++) {
-		if (enemyFlag_[i] == 1) {
-			worldTransformEnemy_[i].translation_.z -= 0.4f;
-			worldTransformEnemy_[i].rotation_.x -= 0.2f;
+		if (enemyFlag_[i] == 1) 
+		{
+		worldTransformEnemy_[i].translation_.x += enemySpeed_[i];
+		if (worldTransformEnemy_[i].translation_.x >= 4)
+		{
+				enemySpeed_[i] = -0.1f;
 		}
-		if (worldTransformEnemy_[i].translation_.z < -5) {
-			enemyFlag_[i] = 0;
+		
+		if (worldTransformEnemy_[i].translation_.x <= -4) {
+				enemySpeed_[i] = 0.1f;
+		}
+
+		  worldTransformEnemy_[i].translation_.z -= 0.4f;
+		  worldTransformEnemy_[i].rotation_.x -= 0.2f;
+		  if (worldTransformEnemy_[i].translation_.z < -5) {
+				enemyFlag_[i] = 0;
+		  }
 		}
 	}
 }
 //発生
 void GameScene::EnemyBorn() {
-	for (int e = 0; e < 10; e++) {
-		if (enemyFlag_[e] == 0) {
-			enemyFlag_[e] = 1;
-			worldTransformEnemy_[e].translation_.z = 40;
-			// 乱数座標指定
-			if (rand() % 10 == 0) {
-				int x = rand() % 80;
-				float x2 = (float)x / 10 - 4;
-				worldTransformEnemy_[e].translation_.x = x2;
-				break;
+	if (rand() % 10 == 0) {
+		for (int e = 0; e < 10; e++) {
+			if (enemyFlag_[e] == 0) {
+				enemyFlag_[e] = 1;
+				// 敵スピード
+				if (rand() % 2 == 0) {
+					enemySpeed_[e] = 0.1f;
+				} else {
+					enemySpeed_[e] = -0.1f;
+				}
+				worldTransformEnemy_[e].translation_.z = 40;
+				// 乱数座標指定
+					int x = rand() % 80;
+					float x2 = (float)x / 10 - 4;
+					worldTransformEnemy_[e].translation_.x = x2;
+					break;
 			}
 		}
 	}
@@ -356,6 +402,9 @@ void GameScene::CollisionPlayerEnemy() {
 				// 存在しない
 				enemyFlag_[i] = 0;
 				playerLife_ -= 1;
+
+				//プレイヤーヒットSE
+				audio_->PlayWave(soundDataHandleEnemyHitSE_);
 			}
 		}
 	}
@@ -377,19 +426,14 @@ void GameScene::CollisionBeamEnemy() {
 					enemyFlag_[e] = 0;
 					beamFlag_[e] = 0;
 					gameScore_++;
+
+					// プレイヤーヒットSE
+					audio_->PlayWave(soundDataHandlePlayerHitSE_);
 				}
 			}
 		}
 	}
 }
-
-
-
-
-
-
-
-
 
 
     //表示

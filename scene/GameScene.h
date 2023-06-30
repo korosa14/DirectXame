@@ -103,7 +103,15 @@ private: // メンバ変数
 
 	Sprite* spriteEnter_ = nullptr;
 
+	//サウンド
+	uint32_t soundDataHandleTitleBGM_ = 0;//タイトルBGM
+	uint32_t soundDataHandleGamePlayBGM_ = 0;//ゲームプレイBGM
+	uint32_t soundDataHandleGameOverBGM_ = 0;//ゲームオーバーBGM
+	uint32_t soundDataHandleEnemyHitSE_ = 0;//敵ヒットSE
+	uint32_t soundDataHandlePlayerHitSE_ = 0;//プレイヤーヒットSE
+	uint32_t voiceHandleBGM_ = 0;//音声再生ハンドル
 	
+
 	int beamTimer_ = 0;//ビーム発射タイマー
 	int gameScore_ = 0;//ゲームスコア
 	int playerLife_ = 3;//プレイヤーライフ
@@ -118,6 +126,7 @@ private: // メンバ変数
 	WorldTransform worldTransformEnemy_[10];
 	//敵存在フラグ
 	int enemyFlag_[10] = {};
+	float enemySpeed_[10] = {};//敵のスピード
 
 	//当たり判定
 	DebugText* debugText_ = nullptr;
