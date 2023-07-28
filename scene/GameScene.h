@@ -52,6 +52,7 @@ public: // メンバ関数
 	void EnemyUpdate();//敵更新
 	void EnemyMove();//敵移動
 	void EnemyBorn();//敵発生
+	void EnemyJump();
 
 	void GamePlayUpdate();//ゲームプレイ更新
 	void GamePlayerDrow3D();//ゲームプレイ3D表示
@@ -67,6 +68,8 @@ public: // メンバ関数
 	void GamePlayStart();//初期化
 
 	void StageUpdate();//ステージ更新
+
+	void DrawScore();//数値の表示
 
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
@@ -93,6 +96,14 @@ private: // メンバ変数
 
 	int beamFlag_[10] = {}; // ビーム存在フラグ
 
+	//スコア数値(スプライト)
+	uint32_t textureHandleNumber_ = 0;
+	Sprite* spriteNumeber_[5] = {};
+	
+
+	//ライフ表示
+	Sprite* spriteLife_[3] = {};
+
 	//タイトル(スプライト)
 	uint32_t textureHandLeTitle_ = 0;
 	Sprite* spriteTitle_ = nullptr;
@@ -115,13 +126,18 @@ private: // メンバ変数
 	
 
 	int beamTimer_ = 0;//ビーム発射タイマー
-	int gameScore_ = 0;//ゲームスコア
+	int textureHandleSCORE_ = 0; // ゲームスコア
+	Sprite* spriteScore_ = nullptr;
+
 	int playerLife_ = 3;//プレイヤーライフ
 	//int sceneMode_ = 0;//シーンモード(ゲームプレイ)
 	int sceneMode_ = 1;//シーンモード(タイトル)
 	int gameTimer_ = 0;
 	int timer_ = 0;//タイマー変数
 	int gameover_ = 0;//ゲームオーバー
+	int playerTimer_ ;//プレイヤータイマー変数
+
+
 	// 敵
 	uint32_t textureHandleEnemy_ = 0;
 	Model* modelEnemy_ = 0;
@@ -130,7 +146,7 @@ private: // メンバ変数
 	int enemyFlag_[10] = {};
 	float enemySpeed_[10] = {};//敵のスピード
 
-	float enemyJumpSpeed_[10] = {};//敵ジャンプの移動速度
+	float enemyJumpSpeed_[10] = {1};//敵ジャンプの移動速度
 
 	//当たり判定
 	DebugText* debugText_ = nullptr;
