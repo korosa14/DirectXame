@@ -16,6 +16,7 @@ GameScene::~GameScene() {
 	delete spriteTitle_;//タイトル
 	delete spritesabuTitle_;//サブタイトル
 	delete spriteGameover_;//ゲームオーバー
+	delete spriteGameclear_;//ゲームクリア
 
 }
 void GameScene::Initialize() {
@@ -91,17 +92,23 @@ void GameScene::Initialize() {
 	//ゲームオーバー
 	texturHandleGameover_ = TextureManager::Load("gameover.png");
 	spriteGameover_ = Sprite::Create(texturHandleGameover_, {0, 0});
+	//ゲームクリア
+	texturHandleGameClear_ = TextureManager::Load("GameClear.png");
+	spriteGameclear_ = Sprite::Create(texturHandleGameClear_, {0, 0});
+
 
 	//ゲームスコア
 	textureHandleSCORE_ = TextureManager::Load("score.png");
 	spriteScore_ = Sprite::Create(textureHandleSCORE_, {150.0f, 0});
 
 	//サウンドデータの読み込み
-	soundDataHandleTitleBGM_ = audio_->LoadWave("Audio/Ring05.wav");
-	soundDataHandleGamePlayBGM_ = audio_->LoadWave("Audio/Ring08.wav");
+	soundDataHandleTitleBGM_ = audio_->LoadWave("Audio/Ring08.wav");
+	soundDataHandleGamePlayBGM_ = audio_->LoadWave("Audio/Ring05.wav");
 	soundDataHandleGameOverBGM_ = audio_->LoadWave("Audio/Ring09.wav");
+	soundDataHandleGameClear_ = audio_->LoadWave("Audio/GameClear.wav");
 	soundDataHandleEnemyHitSE_ = audio_->LoadWave("Audio/chord.wav");
 	soundDataHandlePlayerHitSE_ = audio_->LoadWave("Audio/tada.wav");
+
 
 	//タイトルBGMを再生
 	audio_->StopWave(voiceHandleBGM_); // 現在のBGMを停止
@@ -169,6 +176,31 @@ void GameScene::GameOver2DNear()
 	}
 }
 
+//ゲームクリア
+void GameScene::GameClearUpdate()
+{
+	// エンターキーを押した瞬間
+	if (input_->TriggerKey(DIK_RETURN)) {
+		// モードをゲームプレイへ変更
+		sceneMode_ = 1;
+
+		// タイトルBGMを再生
+		audio_->StopWave(voiceHandleBGM_); // 現在のBGMを停止
+		voiceHandleBGM_ = audio_->PlayWave(soundDataHandleTitleBGM_, true);
+	}
+}
+void GameScene::GameClear2DNear() 
+{
+	//ゲームクリア表示
+	spriteGameclear_->Draw();
+
+	// エンター表示
+	if (gameTimer_ % 40 >= 20) {
+		spriteEnter_->Draw();
+	}
+
+}
+
 void GameScene::GamePlayStart()
 { 
 	gameTimer_ = 0;
@@ -196,6 +228,8 @@ void GameScene::GamePlayUpdate() {
 	EnemyUpdate();  // 敵更新
 	Collision();    // 更新処理
 	StageUpdate();//ステージ更新
+	
+	//ゲームオーバー
 	if (playerLife_ <= 0) {
 		
 		// BGM切り替え
@@ -205,6 +239,17 @@ void GameScene::GamePlayUpdate() {
 
 		// ゲームオーバーを表示
 		sceneMode_ = 2;
+	}
+	//ゲームクリア
+	if (textureHandleSCORE_ >= 50) {
+
+		// BGM切り替え
+		audio_->StopWave(voiceHandleBGM_); // 現在のBGMを停止
+		voiceHandleBGM_ =
+		    audio_->PlayWave(soundDataHandleGameClear_, true); // ゲームプレイBGMを再生
+
+		//ゲームクリアを表示
+		sceneMode_ = 3;
 	}
 	
 }
@@ -216,16 +261,18 @@ void GameScene::Update() {
 	switch (sceneMode_)
 	{ 
 	case 0:
-		GamePlayUpdate();
+		GamePlayUpdate();//ゲームプレイ更新
 		
 		break;
 	case 1:
-		TitleUpdate();
+		TitleUpdate();//タイトル更新
 		break;
 	case 2:
-		GameOverUpdate();
+		GameOverUpdate();//ゲームオーバー更新
 	
 		break;
+	case 3:
+		GameClearUpdate();//ゲームクリア更新
 	}
 	gameTimer_ += 1;
 }
@@ -288,7 +335,9 @@ void GameScene::GamePlayerDrow2DBack() {
 void GameScene::GamePlayerDrow2DNear() {
 	// ゲームスコア
 	DrawScore();
-	spriteScore_->Draw();
+	for (int i = 0; i < textureHandleSCORE_; i++) {
+		spriteScore_->Draw();
+	}
 
 	// プレイヤーライフ
 	for (int i = 0; i < playerLife_; i++) {
@@ -556,8 +605,7 @@ void GameScene::Draw() {
 	// 背景スプライト描画前処理
 	Sprite::PreDraw(commandList);
 	//各シーンの背景2D表示を呼び出す
-	    switch (sceneMode_) 
-		{
+	switch (sceneMode_) {
 	case 0:
 		GamePlayerDrow2DBack();
 		break;
@@ -565,12 +613,15 @@ void GameScene::Draw() {
 		break;
 	case 2:
 		GamePlayerDrow2DBack();
-		if (playerTimer_ % 4 < 2)
-		{
-			
+		if (playerTimer_ % 4 < 2) {
 		}
 		break;
+	case 3:
+		GamePlayerDrow2DBack();
+		if (playerTimer_ % 4 < 2) {
 		}
+		break;
+	}
 	// 更新
 	
 
@@ -598,6 +649,8 @@ void GameScene::Draw() {
 	case 2:
 		GamePlayerDrow3D(); // ゲームプレイ3D表示
 		break;
+	case 3:
+		GamePlayerDrow3D();// ゲームプレイ3D表示
 	}
 	
 	/// <summary>
@@ -627,6 +680,9 @@ void GameScene::Draw() {
 		GamePlayerDrow2DNear(); // ゲームプレイ2D近景表示
 
 		break;
+	case 3:
+		GameClear2DNear();//ゲームクリア
+		GamePlayerDrow2DNear(); // ゲームプレイ2D近景表示
 	}
 	// デバックテキスト
 	//debugText_->Print("AAA", 10, 10, 2);

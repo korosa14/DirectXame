@@ -65,6 +65,9 @@ public: // メンバ関数
 	void GameOverUpdate();//ゲームオーバー更新
 	void GameOver2DNear(); // ゲームオーバー2D
 
+	void GameClearUpdate();//ゲームクリア更新
+	void GameClear2DNear();//ゲームクリア2D
+
 	void GamePlayStart();//初期化
 
 	void StageUpdate();//ステージ更新
@@ -116,10 +119,15 @@ private: // メンバ変数
 
 	Sprite* spriteEnter_ = nullptr;
 
+	//ゲームクリア
+	uint32_t texturHandleGameClear_ = 0;
+	Sprite* spriteGameclear_ = nullptr;
+
 	//サウンド
 	uint32_t soundDataHandleTitleBGM_ = 0;//タイトルBGM
 	uint32_t soundDataHandleGamePlayBGM_ = 0;//ゲームプレイBGM
 	uint32_t soundDataHandleGameOverBGM_ = 0;//ゲームオーバーBGM
+	uint32_t soundDataHandleGameClear_ = 0;//ゲームクリアBGM
 	uint32_t soundDataHandleEnemyHitSE_ = 0;//敵ヒットSE
 	uint32_t soundDataHandlePlayerHitSE_ = 0;//プレイヤーヒットSE
 	uint32_t voiceHandleBGM_ = 0;//音声再生ハンドル
