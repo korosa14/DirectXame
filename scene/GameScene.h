@@ -137,7 +137,7 @@ private: // メンバ変数
 	int textureHandleSCORE_ = 0; // ゲームスコア
 	Sprite* spriteScore_ = nullptr;
 
-	int playerLife_ = 3;//プレイヤーライフ
+	int playerLife_ = 1;//プレイヤーライフ
 	//int sceneMode_ = 0;//シーンモード(ゲームプレイ)
 	int sceneMode_ = 1;//シーンモード(タイトル)
 	int gameTimer_ = 0;

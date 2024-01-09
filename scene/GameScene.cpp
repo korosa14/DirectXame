@@ -102,12 +102,12 @@ void GameScene::Initialize() {
 	spriteScore_ = Sprite::Create(textureHandleSCORE_, {150.0f, 0});
 
 	//サウンドデータの読み込み
-	soundDataHandleTitleBGM_ = audio_->LoadWave("Audio/Ring08.wav");
-	soundDataHandleGamePlayBGM_ = audio_->LoadWave("Audio/Ring05.wav");
-	soundDataHandleGameOverBGM_ = audio_->LoadWave("Audio/Ring09.wav");
-	soundDataHandleGameClear_ = audio_->LoadWave("Audio/GameClear.wav");
-	soundDataHandleEnemyHitSE_ = audio_->LoadWave("Audio/chord.wav");
-	soundDataHandlePlayerHitSE_ = audio_->LoadWave("Audio/tada.wav");
+	soundDataHandleTitleBGM_ = audio_->LoadWave("Audio/Ring08.wav");//タイトルBGM
+	soundDataHandleGamePlayBGM_ = audio_->LoadWave("Audio/Ring05.wav");//ゲームプレイBGM
+	soundDataHandleGameOverBGM_ = audio_->LoadWave("Audio/tada.wav");//ゲームオーバーBGM
+	soundDataHandleGameClear_ = audio_->LoadWave("Audio/GameClear.wav");//ゲームクリアBGM
+	soundDataHandleEnemyHitSE_ = audio_->LoadWave("Audio/chord.wav");//敵ヒットSE
+	soundDataHandlePlayerHitSE_ = audio_->LoadWave("Audio/Ring09.wav");//プレイヤーヒットSE
 
 
 	//タイトルBGMを再生
@@ -221,17 +221,62 @@ void GameScene::GamePlayStart()
 }
 
 
-//ゲームプレイ更新
+////ゲームプレイ更新
+//void GameScene::GamePlayUpdate() {
+//	PlayerUpdate(); // プレイヤー更新
+//	BeamUpdate();   // ビーム更新
+//	EnemyUpdate();  // 敵更新
+//	Collision();    // 更新処理
+//	StageUpdate();//ステージ更新
+//	
+//	//ゲームオーバー
+//	if (playerLife_ <= 0) {
+//		
+//		// BGM切り替え
+//		audio_->StopWave(voiceHandleBGM_); // 現在のBGMを停止
+//		voiceHandleBGM_ =
+//		    audio_->PlayWave(soundDataHandleGameOverBGM_, true); // ゲームプレイBGMを再生
+//
+//		// ゲームオーバーを表示
+//		sceneMode_ = 2;
+//	}
+//	//ゲームクリア
+//	if (textureHandleSCORE_ >= 50) {
+//
+//		// BGM切り替え
+//		audio_->StopWave(voiceHandleBGM_); // 現在のBGMを停止
+//		voiceHandleBGM_ =
+//		    audio_->PlayWave(soundDataHandleGameClear_, true); // ゲームプレイBGMを再生
+//
+//		//ゲームクリアを表示
+//		sceneMode_ = 3;
+//	}
+//	
+//}
+
+// ゲームプレイ更新
 void GameScene::GamePlayUpdate() {
 	PlayerUpdate(); // プレイヤー更新
 	BeamUpdate();   // ビーム更新
 	EnemyUpdate();  // 敵更新
 	Collision();    // 更新処理
-	StageUpdate();//ステージ更新
-	
-	//ゲームオーバー
+	StageUpdate();  // ステージ更新
+
+	// ゲームクリア
 	if (playerLife_ <= 0) {
+
 		
+		// BGM切り替え
+		audio_->StopWave(voiceHandleBGM_); // 現在のBGMを停止
+		voiceHandleBGM_ =
+		    audio_->PlayWave(soundDataHandleGameClear_, true); // ゲームプレイBGMを再生
+
+		// ゲームクリアを表示
+		sceneMode_ = 3;
+	}
+	// ゲームオーバー
+	if (textureHandleSCORE_ >= 50) {
+
 		// BGM切り替え
 		audio_->StopWave(voiceHandleBGM_); // 現在のBGMを停止
 		voiceHandleBGM_ =
@@ -240,18 +285,6 @@ void GameScene::GamePlayUpdate() {
 		// ゲームオーバーを表示
 		sceneMode_ = 2;
 	}
-	//ゲームクリア
-	if (textureHandleSCORE_ >= 50) {
-
-		// BGM切り替え
-		audio_->StopWave(voiceHandleBGM_); // 現在のBGMを停止
-		voiceHandleBGM_ =
-		    audio_->PlayWave(soundDataHandleGameClear_, true); // ゲームプレイBGMを再生
-
-		//ゲームクリアを表示
-		sceneMode_ = 3;
-	}
-	
 }
 
 
